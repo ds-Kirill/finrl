@@ -57,7 +57,7 @@ class Features:
 
         return self._convert_to_float32()
 
-    def momentum_features(self, window: int = 15, rsi_window: int = 14, macd_windows: tuple = (12, 26, 9)) -> pd.DataFrame:
+    def momentum_features(self, window: int = 95, rsi_window: int = 14, macd_windows: tuple = (12, 26, 9)) -> pd.DataFrame:
         """Compute momentum features (RSI, MACD, SMA, EMA, ROC) and return the updated DataFrame."""
         # RSI Calculation
         self.df['RSI'] = self._calculate_rsi(self.close_np, rsi_window)
