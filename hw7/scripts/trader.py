@@ -42,7 +42,7 @@ session = HTTP(
 with open('models/linear_regression_model-act.pkl', 'rb') as file:
     	loaded_model = pickle.load(file)
     	
-f_shape = ['close', 'SMA', 'rolling_mean_10', 'rolling_min_5', 'high', 
+f_shape = ['close', 'SMA_L', 'SMA_S', 'rolling_mean_10', 'rolling_min_5', 'high', 
        'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
 
 session_boto = boto3.session.Session()
@@ -151,13 +151,13 @@ def main(): #ticker
                     if is_pos("ADAUSDT") == False:
                         df_features = add_features(combined_df[-105:])
                         prediction = make_prediction(df_features[f_shape])
-                        if df_features['close'].iloc[-2] < df_features['SMA'].iloc[-2]:
-                            if (df_features['close'].iloc[-1] > df_features['close'].iloc[-2]) & (prediction > df_features['close'].iloc[-1]):
-                                tpprice = close * 1.3
-                                slprice = df_features['close'][-4:].min() * 0.98
-                                order = place_order("ADAUSDT", "buy", 20, tpprice, slprice)
-                                logging.info(f"BUY!!! {order}")
-                        logging.info(f"Predict price {prediction}")
+                        if df_features['SMA_S'].iloc[-1] < df_features['SMA_L'].iloc[-1]:
+                            if df_features['close'].iloc[-2] < df_features['SMA_S'].iloc[-2]:
+                                if (df_features['close'].iloc[-1] > df_features['close'].iloc[-2]) & (prediction > df_features['close'].iloc[-1]):
+                                    tpprice = close * 1.3
+                                    slprice = df_features['close'][-4:].min() * 0.98
+                                    order = place_order("ADAUSDT", "buy", 20, tpprice, slprice)
+                                    logging.info(f"BUY!!! {order}")
                 except (TypeError, IndexError, AttributeError):
                     pass
                 
