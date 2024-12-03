@@ -33,6 +33,49 @@ bucket_name = 'otus-fin'
 endpoint_url = 'https://storage.yandexcloud.net'
 # f_shape_pl = ['open', 'high', 'low', 'close', 'volume', 'rolling_mean_10', 'rolling_min_5', 'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10']
 
+session = HTTP(
+    testnet=False,
+    api_key=api_key,
+    api_secret=api_secret,
+    )
+    
+with open('models/linear_regression_model-act.pkl', 'rb') as file:
+    	loaded_model = pickle.load(file)
+    	
+f_shape = ['close', 'SMA', 'rolling_mean_10', 'rolling_min_5', 'high', 
+       'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
+
+session_boto = boto3.session.Session()
+s3_client = session_boto.client(
+service_name='s3',
+endpoint_url=endpoint_url,
+aws_access_key_id=yc_access_key,
+aws_secret_access_key=yc_secret_key,
+)
+
+result = s3_client.list_objects_v2(Bucket=bucket_name, Prefix='data/train/ADAUSDT/')
+parquet_files = [obj['Key'] for obj in result.get('Contents', []) if obj['Key'].endswith('.parquet')]
+
+dfs = []
+
+for pf in parquet_files:
+    df = pd.read_parquet(
+        f's3://otus-fin/{pf}',
+        engine='pyarrow',
+        storage_options={
+            'key': yc_access_key,
+            'secret': yc_secret_key,
+            'client_kwargs': {'endpoint_url': endpoint_url}
+            }
+        )
+    dfs.append(df)
+
+combined_df = pd.concat(dfs).drop_duplicates()
+
+del dfs
+del df
+gc.collect()
+    
 def place_order(ticker, side, qty, tpprice, slprice):
     order = session.place_order(
     category="linear",
@@ -80,52 +123,8 @@ def is_pos(ticker):
     else:
         return True
 
-def main(): #ticker	
-    
-    session = HTTP(
-    testnet=False,
-    api_key=api_key,
-    api_secret=api_secret,
-    )
+def main(): #ticker    
 
-    with open('models/linear_regression_model-act.pkl', 'rb') as file:
-    	loaded_model = pickle.load(file)
-
-    f_shape = ['close', 'SMA', 'rolling_mean_10', 'rolling_min_5', 'high', 
-               'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
-
-    session_boto = boto3.session.Session()
-    s3_client = session_boto.client(
-    service_name='s3',
-    endpoint_url=endpoint_url,
-    aws_access_key_id=yc_access_key,
-    aws_secret_access_key=yc_secret_key,
-    )
-
-    result = s3_client.list_objects_v2(Bucket=bucket_name, Prefix='data/train/ADAUSDT/')
-    parquet_files = [obj['Key'] for obj in result.get('Contents', []) if obj['Key'].endswith('.parquet')]
-    
-    dfs = []
-    
-    for pf in parquet_files:
-        df = pd.read_parquet(
-                    f's3://otus-fin/{pf}',
-                    engine='pyarrow',
-                    storage_options={
-                        'key': yc_access_key,
-                        'secret': yc_secret_key,
-                        'client_kwargs': {'endpoint_url': endpoint_url}
-                    }
-                )
-        dfs.append(df)
-        
-    combined_df = pd.concat(dfs).drop_duplicates()
-    
-    del dfs
-    del df
-    gc.collect()
-
-        
     def handle_message(message):
         
         global combined_df
