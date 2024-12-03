@@ -1,0 +1,15 @@
+numpy
+pandas
+scikit-learn
+ccxt
+boto3
+pyarrow
+s3fs
+scipy
+xgboost
+optuna
+catboost
+neuralforecast
+torch
+pybit
+pytorch-tsmixer
