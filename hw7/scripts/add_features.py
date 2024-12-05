@@ -73,7 +73,7 @@ def main():
         combined_df = feature_engineer.price_based_features()
         combined_df = feature_engineer.volume_based_features()
         combined_df = feature_engineer.volatility_features(window=15)
-        combined_df = feature_engineer.momentum_features(window=95)
+        combined_df = feature_engineer.momentum_features()
         combined_df = feature_engineer.trend_features(window=14)
         combined_df = feature_engineer.lag_rolling_features(lags=[1, 2, 3], windows=[5, 10, 20])
         combined_df = feature_engineer.statistical_features(window=20)

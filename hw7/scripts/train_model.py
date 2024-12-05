@@ -36,15 +36,18 @@ def main():
                             'client_kwargs': {'endpoint_url': endpoint_url}
                         }
                     )
-  
-    df['target'] = df['close'].shift(-1) # Добавил таргет, цена следующего бара
+    
 
     # Актуальные фичи на данный момент
-    f_shape = ['close', 'SMA', 'rolling_mean_10', 'rolling_min_5', 'high', 'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
+    # f_shape = ['close', 'SMA', 'rolling_mean_10', 'rolling_min_5', 'high', 'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
+    f_shape = ['close', 'SMA_L', 'SMA_S', 'rolling_mean_10', 'rolling_min_5', 'high', 
+       'rolling_min_20', 'rolling_min_10', 'rolling_max_20', 'rolling_max_10', 'open' ]
 
     df = df[f_shape]
+    df['target'] = df['close'].shift(-1) # Добавил таргет, цена следующего бара
     df = df.dropna()
-    X = df.drop(columns=['target']) 
+    
+    X = df.drop(columns=['target'])
     y = df['target']
 
     train_size = 0.90  # 90% для тренировки

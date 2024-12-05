@@ -70,12 +70,12 @@ class Features:
         # SMA and EMA
         sma_l = np.mean(np.lib.stride_tricks.sliding_window_view(self.close_np, window_long), axis=1)
         sma_s = np.mean(np.lib.stride_tricks.sliding_window_view(self.close_np, window_short), axis=1)
-        self.df['SMA_L'] = np.concatenate([[np.nan] * (window - 1), sma_l])
-        self.df['SMA_S'] = np.concatenate([[np.nan] * (window - 1), sma_s])
-        self.df['EMA'] = self.df['close'].ewm(span=window, adjust=False).mean()
+        self.df['SMA_L'] = np.concatenate([[np.nan] * (window_long - 1), sma_l])
+        self.df['SMA_S'] = np.concatenate([[np.nan] * (window_short - 1), sma_s])
+        self.df['EMA'] = self.df['close'].ewm(span=window_short, adjust=False).mean()
 
         # Rate of Change (ROC)
-        self.df['ROC'] = self._calculate_roc(self.close_np, window)
+        self.df['ROC'] = self._calculate_roc(self.close_np, window_short)
 
         return self._convert_to_float32()
 
