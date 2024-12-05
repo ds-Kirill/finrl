@@ -127,43 +127,43 @@ def main(): #ticker
 
     def handle_message(message):
         
-    global combined_df
-    
-    if message.get('data') and message['data'][0].get('confirm') == True:
-        print (message)
-        try:
-            cols = ['datetime', 'open', 'high',	'low', 'close',	'volume']
-            datetime = message['data'][0]['start']
-            openn = message['data'][0]['open']
-            high = message['data'][0]['high']
-            low = message['data'][0]['low']
-            close = message['data'][0]['close']
-            volume = message['data'][0]['volume']       
-            ndf = pd.DataFrame([[datetime, openn, high, low, close, volume]], columns=cols)
-        except (TypeError, IndexError, AttributeError) as e:
-            print (e)
-
-
-        ndf['datetime'] = pd.to_datetime(ndf['datetime'], unit='ms')
-        ndf.set_index('datetime', inplace=True)
-        for col in ndf.columns:
-            ndf[col] =  pd.to_numeric(ndf[col])
-        combined_df = pd.concat([combined_df, ndf]) # подклеил новые данные и отправил предсказывать    
-        if is_pos("ADAUSDT") == False:
-            df_features = add_features(combined_df[-105:])
-            prediction = make_prediction(df_features[f_shape])
-            if df_features['SMA_S'].iloc[-1] < df_features['SMA_L'].iloc[-1]:
-                if df_features['high'].iloc[-2] < df_features['SMA_S'].iloc[-2]: # проверить ХАЙ в датасете, возможно его там нет
-                    if (df_features['close'].iloc[-1] > df_features['close'].iloc[-2]) & (prediction > df_features['close'].iloc[-1]):
-            tpprice = float(close) * 1.31
-            slprice = float(df_features['close'][-4:].min()) * 0.98
+        global combined_df
+        
+        if message.get('data') and message['data'][0].get('confirm') == True:
+            print (message)
             try:
-                order = place_order("ADAUSDT", "Buy", 20, tpprice, slprice)
-                print(f"BUY!!! {order}")
+                cols = ['datetime', 'open', 'high',	'low', 'close',	'volume']
+                datetime = message['data'][0]['start']
+                openn = message['data'][0]['open']
+                high = message['data'][0]['high']
+                low = message['data'][0]['low']
+                close = message['data'][0]['close']
+                volume = message['data'][0]['volume']       
+                ndf = pd.DataFrame([[datetime, openn, high, low, close, volume]], columns=cols)
             except (TypeError, IndexError, AttributeError) as e:
                 print (e)
-        else:
-            print("POS!!", session.get_positions(category="linear", symbol="ADAUSDT",))
+    
+    
+            ndf['datetime'] = pd.to_datetime(ndf['datetime'], unit='ms')
+            ndf.set_index('datetime', inplace=True)
+            for col in ndf.columns:
+                ndf[col] =  pd.to_numeric(ndf[col])
+            combined_df = pd.concat([combined_df, ndf]) # подклеил новые данные и отправил предсказывать    
+            if is_pos("ADAUSDT") == False:
+                df_features = add_features(combined_df[-105:])
+                prediction = make_prediction(df_features[f_shape])
+                if df_features['SMA_S'].iloc[-1] < df_features['SMA_L'].iloc[-1]:
+                    if df_features['high'].iloc[-2] < df_features['SMA_S'].iloc[-2]: # проверить ХАЙ в датасете, возможно его там нет
+                        if (df_features['close'].iloc[-1] > df_features['close'].iloc[-2]) & (prediction > df_features['close'].iloc[-1]):
+                            tpprice = float(close) * 1.31
+                            slprice = float(df_features['close'][-4:].min()) * 0.98
+                            try:
+                                order = place_order("ADAUSDT", "Buy", 20, tpprice, slprice)
+                                print(f"BUY!!! {order}")
+                            except (TypeError, IndexError, AttributeError) as e:
+                                print (e)
+            else:
+                print("POS!!", session.get_positions(category="linear", symbol="ADAUSDT",))
 
     ws_spot = WebSocket(testnet=False, channel_type="linear")
         
